@@ -68,17 +68,22 @@
     .tile:hover { outline: 2px dashed rgba(255,255,255,0.25); outline-offset: -2px; }
 
     .entities { position: absolute; inset: 0; }
-    .plant, .zombie, .pea, .snowpea, .boom, .sun-token, .mower, .ghost { position: absolute; will-change: transform; }
+    .plant, .zombie, .pea, .snowpea, .firepea, .boom, .rowfire, .sun-token, .mower, .ghost { position: absolute; will-change: transform; }
 
     .plant { width: calc(var(--tile-w) - 10px); height: calc(var(--tile-h) - 10px); transform: translate(5px, 5px); border-radius: 12px; display: grid; place-items: center; font-size: 22px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.25); border: 2px solid rgba(0,0,0,0.1); color: #102015; }
     .plant.peashooter { background: #64c86a; }
     .plant.sunflower { background: #f2c14e; color: #5a3d00; }
     .plant.wallnut { background: #b08968; }
+    .plant.tallnut { background: #927052; }
     .plant.snowpea { background: #7fd3ff; color: #053047; }
     .plant.repeater { background: #5abf84; }
     .plant.cherry { background: #ff6b6b; color: #380606; }
     .plant.potatomine { background: #9a6c43; }
     .plant.spikeweed { background: #546b2f; color: #cfe28a; }
+    .plant.torchwood { background: #e7963c; color: #2a1700; }
+    .plant.squash { background: #8fd36a; }
+    .plant.chomper { background: #9b6bd6; color: #220b3f; }
+    .plant.jalapeno { background: #ff4b4b; color: #3d0000; }
 
     .ghost { width: calc(var(--tile-w) - 10px); height: calc(var(--tile-h) - 10px); transform: translate(5px, 5px); border-radius: 12px; display: grid; place-items: center; font-size: 22px; font-weight: 800; color: #102015; background: rgba(255,255,255,0.45); border: 2px dashed rgba(255,255,255,0.8); pointer-events:none; opacity: 0; transition: opacity .15s ease, filter .15s ease, border-color .15s ease; }
     .ghost.show { opacity: 1; }
@@ -89,13 +94,20 @@
     .zombie.cone { background: linear-gradient(#9aa9aa, #8d9a9a); border-color: #7c8b8b; }
     .zombie.bucket { background: linear-gradient(#9aa9aa, #7f8f9f); border-color: #6d7c8a; }
     .zombie.imp { width: 50px; height: 68px; background: #a6b0b0; }
+    .zombie.flag { background: #a4b8b8; }
+    .zombie.pole { background: #a7b6b6; }
+    .zombie.screen { background: linear-gradient(#8fa3a3, #7f9198); box-shadow: inset 0 0 0 4px rgba(180, 210, 220, 0.45); }
+    .zombie.football { background: #6e7e88; border-color: #4d5962; }
     .zombie.slowed { filter: hue-rotate(170deg) brightness(0.9); }
+    .zombie.noshield { box-shadow: none !important; }
 
-    .pea, .snowpea { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #2f993a; }
+    .pea, .snowpea, .firepea { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #2f993a; }
     .pea { background: #51d451; box-shadow: 0 0 10px rgba(81,212,81,0.7); }
     .snowpea { background: #a5ecff; border-color: #3b8fa3; box-shadow: 0 0 10px rgba(105,225,255,0.7); }
+    .firepea { background: #ff9933; border-color: #b34d00; box-shadow: 0 0 12px rgba(255,153,51,0.85); }
 
     .boom { width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(255,210,120,0.95) 0%, rgba(255,120,80,0.85) 40%, rgba(255,80,80,0.0) 60%); pointer-events: none; mix-blend-mode: screen; }
+    .rowfire { position:absolute; left:0; width: 100%; height: 70px; background: linear-gradient(90deg, rgba(255,80,50,0.0) 0%, rgba(255,80,50,0.8) 20%, rgba(255,120,50,0.6) 50%, rgba(255,80,50,0.8) 80%, rgba(255,80,50,0.0) 100%); filter: blur(1px); pointer-events:none; }
 
     .sun-token { width: 42px; height: 42px; border-radius: 50%; background: #ffd166; border: 2px solid #caa240; display: grid; place-items: center; color: #6b4b00; font-weight: 800; font-size: 14px; box-shadow: 0 6px 16px rgba(0,0,0,0.25); cursor: pointer; }
 
@@ -157,24 +169,34 @@
       peashooter: { id:'peashooter', name:'豌豆射手', emoji:'🌿', className:'peashooter', cost:100, hp: 300, fireInterval: 1500, cooldownMs: 5000 },
       sunflower: { id:'sunflower', name:'向日葵', emoji:'🌻', className:'sunflower', cost:50, hp: 250, sunInterval: 9000, cooldownMs: 5000 },
       wallnut: { id:'wallnut', name:'坚果墙', emoji:'🪵', className:'wallnut', cost:50, hp: 1600, cooldownMs: 12000 },
+      tallnut: { id:'tallnut', name:'高坚果', emoji:'🪵', className:'tallnut', cost:125, hp: 3000, cooldownMs: 20000, blocksVault:true },
       snowpea: { id:'snowpea', name:'寒冰射手', emoji:'❄️', className:'snowpea', cost:175, hp: 300, fireInterval: 1750, cooldownMs: 9000 },
       repeater: { id:'repeater', name:'双发射手', emoji:'🌱', className:'repeater', cost:200, hp: 300, fireInterval: 1600, cooldownMs: 10000 },
+      torchwood: { id:'torchwood', name:'火炬树桩', emoji:'🔥', className:'torchwood', cost:175, hp: 500, cooldownMs: 15000 },
+      squash: { id:'squash', name:'窝瓜', emoji:'🎃', className:'squash', cost:50, hp: 9999, cooldownMs: 15000, reactRange: 120, damage: 9999 },
+      chomper: { id:'chomper', name:'食人花', emoji:'🪻', className:'chomper', cost:150, hp: 300, cooldownMs: 20000, chewMs: 4200, range: 80 },
       cherry: { id:'cherry', name:'樱桃炸弹', emoji:'🍒', className:'cherry', cost:150, hp: 1, cooldownMs: 20000, armedDelay: 700, radius: 120, damage: 9999 },
+      jalapeno: { id:'jalapeno', name:'火辣椒', emoji:'🌶️', className:'jalapeno', cost:125, hp:1, cooldownMs: 22000, delay: 400, damage: 9999 },
       potatomine: { id:'potatomine', name:'土豆地雷', emoji:'🥔', className:'potatomine', cost:25, hp: 1, cooldownMs: 12000, armTime: 10000, radius: 80, damage: 9999 },
       spikeweed: { id:'spikeweed', name:'地刺', emoji:'🪨', className:'spikeweed', cost:100, hp: 300, cooldownMs: 9000, dps: 90 },
     };
 
     const ZOMBIES = {
       normal: { type:'normal', emoji:'🧟', hp: 400, speed: 22, dps: 18 },
+      flag: { type:'flag', emoji:'🚩', hp: 320, speed: 22, dps: 18 },
       cone: { type:'cone', emoji:'🧟‍♂️', hp: 800, speed: 22, dps: 18 },
       bucket: { type:'bucket', emoji:'🪣', hp: 1400, speed: 22, dps: 18 },
+      screen: { type:'screen', emoji:'🧟', hp: 550, shieldHp: 350, speed: 20, dps: 18 },
+      pole: { type:'pole', emoji:'🤸', hp: 500, speed: 36, dps: 18 },
+      football: { type:'football', emoji:'🏈', hp: 1200, speed: 36, dps: 22 },
       imp: { type:'imp', emoji:'🧟‍♂️', hp: 250, speed: 38, dps: 12 },
     };
 
     const PEA = { speed: 220, damage: 80 };
     const SNOWPEA = { speed: 220, damage: 60, slowMs: 4000, slowFactor: 0.5 };
+    const FIREPEA = { speed: 220, damage: 160 };
 
-    const LEVEL = { duration: 120000 /* 120s */, skySunEvery: 6000 };
+    const LEVEL = { duration: 140000, skySunEvery: 6000, bigWaveAt: 0.9 };
 
     // ---------------- 状态 ----------------
     let sun = 150; let running = true; let paused = false; let lastTs = performance.now();
@@ -186,7 +208,7 @@
     const suns = new Set();
     const mowers = new Set();
 
-    let waveStartAt = 0; let skySunHandle = null; let spawnHandle = null;
+    let waveStartAt = 0; let skySunHandle = null; let spawnHandle = null; let bigWaveSpawned = false;
 
     const cardCooldown = {}; // plantId -> nextUsableTs
 
@@ -235,7 +257,7 @@
 
     function buildSeedBar(){
       const sb = document.getElementById('seedBar'); sb.innerHTML='';
-      const order = ['peashooter','sunflower','wallnut','snowpea','repeater','cherry','potatomine','spikeweed'];
+      const order = ['peashooter','sunflower','wallnut','tallnut','snowpea','repeater','torchwood','squash','chomper','cherry','jalapeno','potatomine','spikeweed'];
       for (const id of order){ const def = PLANTS[id]; cardCooldown[id]=0; sb.appendChild(cardEl(def)); }
 
       function cardEl(def){
@@ -285,26 +307,38 @@
     function placePlant(id,row,col){
       const def = PLANTS[id];
       sun -= def.cost; updateSunUI(); cardCooldown[id] = performance.now() + (def.cooldownMs ?? 5000);
-      const plant = { id:`p_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, type:id, row, col, hp:def.hp, nextFireAt:0, nextSunAt:0, armedAt: (def.armTime? performance.now()+def.armTime: 0), el:null };
+      const plant = { id:`p_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, type:id, row, col, hp:def.hp, nextFireAt:0, nextSunAt:0, armedAt: (def.armTime? performance.now()+def.armTime: 0), chewUntil:0, triggered:false, el:null };
       plants.add(plant); grid[row][col]=plant;
       const el=document.createElement('div'); el.className = `plant ${def.className}`; el.style.left = `${col*TILE_W}px`; el.style.top = `${row*TILE_H}px`; el.textContent = def.emoji; el.title = `${def.name} HP:${plant.hp}`; entitiesEl.appendChild(el); plant.el=el;
       if (id==='cherry') { setTimeout(()=>explodeAt(row, col, def.radius, def.damage, plant), def.armedDelay); }
+      if (id==='jalapeno') { setTimeout(()=>burnRow(row, plant), def.delay); }
     }
 
     function removePlant(plant){ plants.delete(plant); if (grid[plant.row][plant.col]===plant) grid[plant.row][plant.col]=null; plant.el?.remove(); }
 
     // ---------------- 僵尸波次 ----------------
     function spawnZombieWaveController(){
-      const start = performance.now(); waveStartAt = start;
+      const start = performance.now(); waveStartAt = start; bigWaveSpawned = false;
       if (skySunHandle) clearInterval(skySunHandle); skySunHandle = setInterval(spawnSkySun, LEVEL.skySunEvery);
       if (spawnHandle) clearInterval(spawnHandle);
       spawnHandle = setInterval(()=>{
         const t = performance.now() - start; const ratio = t / LEVEL.duration;
-        let pool = ['normal']; if (ratio > 0.2) pool.push('cone'); if (ratio > 0.5) pool.push('imp'); if (ratio > 0.7) pool.push('bucket');
-        const count = Math.random() < (ratio>0.6?0.35:0.15) ? 2 : 1;
+        if (!bigWaveSpawned && ratio >= LEVEL.bigWaveAt){
+          bigWaveSpawned = true; spawnBigWave();
+        }
+        let pool = ['normal']; if (ratio > 0.15) pool.push('flag'); if (ratio > 0.25) pool.push('cone'); if (ratio > 0.45) pool.push('imp'); if (ratio > 0.6) pool.push('bucket'); if (ratio > 0.7) pool.push('screen'); if (ratio > 0.78) pool.push('pole'); if (ratio > 0.85) pool.push('football');
+        const count = Math.random() < (ratio>0.6?0.4:0.18) ? 2 : 1;
         for (let i=0;i<count;i++) spawnZombie(randRow(), pick(pool));
         if (t >= LEVEL.duration){ clearInterval(spawnHandle); spawnHandle=null; }
-      }, 2200);
+      }, 2000);
+    }
+
+    function spawnBigWave(){
+      for (let r=0;r<ROWS;r++){
+        spawnZombie(r, 'flag');
+        setTimeout(()=>spawnZombie(r, pick(['cone','bucket','screen','pole'])), 400);
+        setTimeout(()=>spawnZombie(r, pick(['normal','imp','cone','pole'])), 900);
+      }
     }
 
     function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
@@ -312,18 +346,34 @@
 
     function spawnZombie(row, type){
       const def = ZOMBIES[type];
-      const z = { id:`z_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, type, row, x: COLS*TILE_W + 10, hp:def.hp, attacking:false, targetPlant:null, slowedUntil:0, el:null };
+      const z = { id:`z_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, type, row, x: COLS*TILE_W + 10, hp:def.hp, shieldHp: def.shieldHp||0, attacking:false, targetPlant:null, slowedUntil:0, jumped:false, el:null };
       zombies.add(z);
-      const el=document.createElement('div'); el.className = `zombie ${type}`; el.style.top = `${row*TILE_H + 5}px`; el.style.left = `${z.x}px`; el.textContent = def.emoji; entitiesEl.appendChild(el); z.el=el;
+      const el=document.createElement('div'); el.className = `zombie ${type}`; el.style.top = `${row*TILE_H + 5}px`; el.style.left = `${z.x}px`; el.textContent = def.emoji; if (type==='screen') el.classList.add('shielded'); entitiesEl.appendChild(el); z.el=el;
     }
 
     // ---------------- 弹丸 ----------------
     function fireProjectile(row, startX, type){
       const id = `pr_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
-      const spec = (type==='snow' ? SNOWPEA : PEA);
-      const pr = { id, row, x:startX, type, damage: spec.damage, el:null };
+      const pr = { id, row, x:startX, startX, type, damage: type==='snow'? SNOWPEA.damage : PEA.damage, passedTorch:false, el:null };
       projectiles.add(pr);
-      const el=document.createElement('div'); el.className = (type==='snow'?'snowpea':'pea'); el.style.top = `${row*TILE_H + TILE_H/2 - 6}px`; el.style.left = `${startX}px`; entitiesEl.appendChild(el); pr.el=el;
+      const el=document.createElement('div'); el.className = type==='snow' ? 'snowpea' : 'pea'; el.style.top = `${row*TILE_H + TILE_H/2 - 6}px`; el.style.left = `${startX}px`; entitiesEl.appendChild(el); pr.el=el;
+    }
+
+    function maybePassTorch(pr){
+      if (pr.passedTorch) return;
+      // if there is a torchwood between startX and current x on same row, convert
+      for (const p of plants){
+        if (p.type==='torchwood' && p.row===pr.row){
+          const center = p.col*TILE_W + TILE_W/2;
+          if (center > pr.startX && pr.x >= center){
+            pr.passedTorch = true;
+            pr.type = 'fire';
+            pr.damage = FIREPEA.damage;
+            pr.el.className = 'firepea';
+            break;
+          }
+        }
+      }
     }
 
     // ---------------- 阳光 ----------------
@@ -338,20 +388,35 @@
     // ---------------- 割草机 ----------------
     function triggerMower(row){ const mower = Array.from(mowers).find(m=>m.row===row && !m.active); if (!mower) return false; mower.active=true; return true; }
 
-    // ---------------- 伤害/爆炸 ----------------
+    // ---------------- 伤害/爆炸/行火 ----------------
     function explodeAt(row, col, radius, damage, plantRef){
       const cx = col*TILE_W + TILE_W/2; const cy = row*TILE_H + TILE_H/2;
       const boom = document.createElement('div'); boom.className='boom'; boom.style.left = `${cx-70}px`; boom.style.top = `${cy-70}px`; entitiesEl.appendChild(boom); setTimeout(()=>boom.remove(), 300);
       for (const z of Array.from(zombies)){
         if (z.row!==row) continue; const zx = z.x + 30; const dx = Math.abs(zx - cx);
-        if (dx <= radius){ z.hp -= damage; if (z.hp<=0){ z.el?.remove(); zombies.delete(z);} }
+        if (dx <= radius){ damageZombie(z, damage, 'explosion'); }
       }
       if (plantRef) removePlant(plantRef);
     }
 
+    function burnRow(row, plantRef){
+      const y = row*TILE_H + TILE_H/2 - 35; const rf = document.createElement('div'); rf.className='rowfire'; rf.style.top = `${y}px`; entitiesEl.appendChild(rf); setTimeout(()=>rf.remove(), 600);
+      for (const z of Array.from(zombies)){ if (z.row===row){ damageZombie(z, 9999, 'fire'); } }
+      if (plantRef) removePlant(plantRef);
+    }
+
+    function damageZombie(z, amount, src){
+      if (!z || !z.el) return;
+      if (z.type==='screen' && z.shieldHp>0){
+        z.shieldHp -= amount; if (z.shieldHp<=0){ z.shieldHp=0; z.el.classList.add('noshield'); }
+        return;
+      }
+      z.hp -= amount;
+      if (z.hp<=0){ z.el?.remove(); zombies.delete(z); }
+    }
+
     // ---------------- 自适应缩放 ----------------
     function fitScale(){
-      // Keep aspect ratio and fit within viewport
       const fieldW = COLS*TILE_W; const fieldH = ROWS*TILE_H;
       const margin = 24;
       const topbar = document.querySelector('.topbar');
@@ -379,19 +444,42 @@
           if (now>=p.nextSunAt){ p.nextSunAt = now + def.sunInterval; const x=p.col*TILE_W + (TILE_W/2 - 20); const y=p.row*TILE_H + (TILE_H/2 - 20); spawnSunToken(x,y,true); }
         } else if (p.type==='spikeweed'){
           const left = p.col*TILE_W; const right = left + TILE_W;
-          for (const z of zombies){ if (z.row===p.row && z.x+30 >= left && z.x+30 <= right){ z.hp -= def.dps * dt; if (z.hp<=0){ z.el?.remove(); zombies.delete(z);} } }
+          for (const z of zombies){ if (z.row===p.row && z.x+30 >= left && z.x+30 <= right){ damageZombie(z, def.dps * dt, 'spike'); } }
         } else if (p.type==='potatomine'){
           if (now >= p.armedAt){ p.el.style.filter='saturate(1.1) brightness(1.1)'; const cx=p.col*TILE_W+TILE_W/2; for (const z of Array.from(zombies)){ if (z.row!==p.row) continue; const zx=z.x+30; if (Math.abs(zx-cx) < 30){ explodeAt(p.row, p.col, PLANTS.potatomine.radius, PLANTS.potatomine.damage, p); break; } } }
+        } else if (p.type==='squash'){
+          if (!p.triggered){
+            // find closest zombie within reactRange ahead (including same tile)
+            let target=null; let minDx=1e9; const px=p.col*TILE_W+TILE_W/2;
+            for (const z of zombies){ if (z.row!==p.row) continue; const zx=z.x+30; const dx = Math.abs(zx-px); if (zx <= px + PLANTS.squash.reactRange && dx < minDx){ minDx=dx; target=z; } }
+            if (target){
+              p.triggered = true; p.el.style.transform = 'translate(5px, -10px) scale(1.1)'; setTimeout(()=>{ damageZombie(target, PLANTS.squash.damage, 'squash'); removePlant(p); }, 200);
+            }
+          }
+        } else if (p.type==='chomper'){
+          if (now < p.chewUntil) { p.el.style.opacity = 0.8; continue; } else { p.el.style.opacity = 1; }
+          // find zombie in short range ahead
+          const left = p.col*TILE_W; const front = left + TILE_W + PLANTS.chomper.range;
+          let target=null; let minX=1e9; for (const z of zombies){ if (z.row!==p.row) continue; const zx=z.x+30; if (zx >= left && zx <= front && zx < minX){ minX=zx; target=z; } }
+          if (target){ damageZombie(target, 9999, 'chomp'); p.chewUntil = now + PLANTS.chomper.chewMs; }
         }
+        // torchwood, tallnut are passive
       }
 
       // Projectiles
       for (const pr of Array.from(projectiles)){
-        const spec = pr.type==='snow'? SNOWPEA : PEA; pr.x += spec.speed * dt; if (pr.x > COLS*TILE_W + 30){ projectiles.delete(pr); pr.el?.remove(); continue; }
+        // torchwood interaction
+        maybePassTorch(pr);
+        const spec = pr.type==='snow'? SNOWPEA : (pr.type==='fire'? FIREPEA : PEA);
+        pr.x += spec.speed * dt; if (pr.x > COLS*TILE_W + 30){ projectiles.delete(pr); pr.el?.remove(); continue; }
         pr.el.style.left = `${pr.x}px`;
         for (const z of Array.from(zombies)){
           if (z.row !== pr.row) continue; const zx = z.x + 30; if (Math.abs(pr.x - zx) < 22){
-            z.hp -= pr.damage; if (pr.type==='snow'){ z.slowedUntil = Math.max(z.slowedUntil || 0, now + SNOWPEA.slowMs); z.el.classList.add('slowed'); }
+            // fire pea removes slow
+            if (pr.type==='fire'){ z.slowedUntil = 0; z.el.classList.remove('slowed'); }
+            // apply to shield first if screen-door
+            if (z.type==='screen' && z.shieldHp>0){ z.shieldHp -= pr.damage; if (z.shieldHp<=0){ z.shieldHp=0; z.el.classList.add('noshield'); } }
+            else { z.hp -= pr.damage; }
             projectiles.delete(pr); pr.el?.remove(); if (z.hp<=0){ z.el?.remove(); zombies.delete(z);} break;
           }
         }
@@ -400,13 +488,25 @@
       // Zombies
       for (const z of Array.from(zombies)){
         const def = ZOMBIES[z.type]; const isSlowed = (z.slowedUntil || 0) > now; if (!isSlowed) z.el.classList.remove('slowed');
-        const speed = def.speed * (isSlowed ? SNOWPEA.slowFactor : 1);
+        const baseSpeed = (z.type==='pole' && z.jumped) ? ZOMBIES.normal.speed : def.speed;
+        const speed = baseSpeed * (isSlowed ? SNOWPEA.slowFactor : 1);
+        if (!z.attacking){ if (z.x <= 6){ if (triggerMower(z.row)){} else { endGame(false); return; } } }
+
         if (!z.attacking){
-          if (z.x <= 6){ if (triggerMower(z.row)){} else { endGame(false); return; } }
+          // detect plant in current tile
+          const col = Math.max(0, Math.floor(z.x / TILE_W)); if (col>=0 && col<COLS){ const plant = grid[z.row][col]; if (plant && plant.type!=='spikeweed' && plant.type!=='cherry' && plant.type!=='potatomine' && plant.type!=='jalapeno'){
+              // pole-vault special
+              if (z.type==='pole' && !z.jumped){
+                if (plant.type==='tallnut' && PLANTS.tallnut.blocksVault){ // blocked
+                  z.attacking=true; z.targetPlant=plant;
+                } else {
+                  // jump over and slow down to walker speed
+                  z.jumped = true; z.x = plant.col*TILE_W + TILE_W + 12; z.el.style.left = `${z.x}px`; // no damage to plant
+                }
+              } else { z.attacking=true; z.targetPlant=plant; }
+          } }
         }
-        if (!z.attacking){
-          const col = Math.max(0, Math.floor(z.x / TILE_W)); if (col>=0 && col<COLS){ const plant = grid[z.row][col]; if (plant && plant.type!=='spikeweed' && plant.type!=='cherry' && plant.type!=='potatomine'){ z.attacking=true; z.targetPlant=plant; } }
-        }
+
         if (!z.attacking){ z.x -= speed * dt; z.el.style.left = `${z.x}px`; }
         else { const target = z.targetPlant; if (!target || !plants.has(target)){ z.attacking=false; z.targetPlant=null; continue; } target.hp -= def.dps * dt; target.el.title = `${PLANTS[target.type].name} HP:${Math.max(0, target.hp|0)}`; if (target.hp <= 0){ removePlant(target); z.attacking=false; z.targetPlant=null; } }
       }
