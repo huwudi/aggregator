@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>极简版植物大战僵尸 Ultimate</title>
+  <style>
+    body { background: #7ec850; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
+    #game {
+      width: 1200px;
+      margin: 30px auto;
+      background: #b6e355;
+      border: 4px solid #4e7e0e;
+      border-radius: 12px;
+      position: relative;
+      box-shadow: 0 8px 32px #0004;
+      min-height: 800px;
+    }
+    #topbar {
+      display: flex;
+      align-items: center;
+      background: #e3f7a7;
+      padding: 10px 20px;
+      border-bottom: 2px solid #4e7e0e;
+      justify-content: space-between;
+    }
+    #info {
+      font-size: 20px;
+      color: #4e7e0e;
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    #level-select {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    #level-select button {
+      background: #ffe066;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 18px;
+      font-size: 16px;
+      color: #4e7e0e;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 8px #0002;
+    }
+    #cardbar {
+      display: flex;
+      align-items: center;
+      background: #f7f7e3;
+      padding: 10px 20px;
+      border-bottom: 2px solid #4e7e0e;
+      gap: 10px;
+      min-height: 100px;
+    }
+    .plant-card {
+      width: 70px;
+      height: 90px;
+      background: #fff;
+      border: 2px solid #4e7e0e;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: box-shadow 0.2s;
+      margin-right: 8px;
+    }
+    .plant-card.selected {
+      box-shadow: 0 0 0 4px #ffe066;
+      border-color: #ffe066;
+    }
+    .plant-emoji {
+      font-size: 36px;
+      margin-bottom: 4px;
+    }
+    .plant-cost {
+      font-size: 15px;
+      color: #e6b800;
+      font-weight: bold;
+    }
+    #lawn {
+      display: grid;
+      grid-template-rows: repeat(5, 100px);
+      grid-template-columns: repeat(11, 100px);
+      gap: 2px;
+      background: #a2d149;
+      padding: 16px;
+      position: relative;
+      min-height: 520px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: #d6f5a7;
+      border-radius: 6px;
+      position: relative;
+      overflow: visible;
+    }
+    #message {
+      position: absolute;
+      left: 0; right: 0; top: 40%;
+      text-align: center;
+      font-size: 40px;
+      color: #fff;
+      background: #000a;
+      z-index: 100;
+      display: none;
+      padding: 40px 0;
+      border-radius: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="topbar">
+      <div id="info">
+        <span id="sun">☀️ <span id="sun-count">150</span></span>
+        <span id="level">关卡: <span id="level-num">1</span></span>
+        <span id="wave">波次: <span id="wave-num">1</span></span>
+      </div>
+      <div id="level-select">
+        <span>选择关卡:</span>
+        <button data-level="1">1</button>
+        <button data-level="2">2</button>
+        <button data-level="3">3</button>
+        <button data-level="4">4</button>
+        <button data-level="5">5</button>
+      </div>
+    </div>
+    <div id="cardbar"></div>
+    <div id="lawn"></div>
+    <div id="message"></div>
+  </div>
+  <script>
+    // 预留主数据结构和UI初始化，后续分批补全
+    const ROWS = 5, COLS = 11;
+    let sun = 150;
+    let level = 1;
+    let wave = 1;
+    let selectedPlant = null;
+    let grid = [];
+    function initUI() {
+      document.getElementById('sun-count').textContent = sun;
+      document.getElementById('level-num').textContent = level;
+      document.getElementById('wave-num').textContent = wave;
+      // 初始化草坪
+      const lawn = document.getElementById('lawn');
+      lawn.innerHTML = '';
+      grid = [];
+      for (let r = 0; r < ROWS; r++) {
+        grid[r] = [];
+        for (let c = 0; c < COLS; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          lawn.appendChild(cell);
+          grid[r][c] = { plant: null, cell };
+        }
+      }
+    }
+    function showMessage(msg) {
+      const m = document.getElementById('message');
+      m.textContent = msg;
+      m.style.display = 'block';
+      setTimeout(() => { m.style.display = 'none'; }, 2000);
+    }
+    // 关卡选择
+    document.querySelectorAll('#level-select button').forEach(btn => {
+      btn.onclick = () => {
+        level = parseInt(btn.dataset.level);
+        document.getElementById('level-num').textContent = level;
+        wave = 1;
+        document.getElementById('wave-num').textContent = wave;
+        sun = 150;
+        initUI();
+        showMessage('进入第' + level + '关');
+      };
+    });
+    // 初始化
+    initUI();
+  </script>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>极简版植物大战僵尸</title>
+  <style>
+    body {
+      background: #7ec850;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    #game {
+      width: 900px;
+      margin: 30px auto;
+      background: #b6e355;
+      border: 4px solid #4e7e0e;
+      border-radius: 12px;
+      position: relative;
+      box-shadow: 0 8px 32px #0004;
+    }
+    #panel {
+      display: flex;
+      align-items: center;
+      background: #e3f7a7;
+      padding: 10px 20px;
+      border-bottom: 2px solid #4e7e0e;
+    }
+    #sun {
+      font-size: 22px;
+      font-weight: bold;
+      margin-right: 30px;
+      color: #e6b800;
+      display: flex;
+      align-items: center;
+    }
+    .plant-card {
+      width: 60px;
+      height: 80px;
+      background: #fff;
+      border: 2px solid #4e7e0e;
+      border-radius: 8px;
+      margin-right: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: box-shadow 0.2s;
+    }
+    .plant-card.selected {
+      box-shadow: 0 0 0 4px #ffe066;
+      border-color: #ffe066;
+    }
+    .plant-emoji {
+      font-size: 32px;
+      margin-bottom: 4px;
+    }
+    .plant-cost {
+      font-size: 14px;
+      color: #e6b800;
+      font-weight: bold;
+    }
+    #lawn {
+      display: grid;
+      grid-template-rows: repeat(5, 80px);
+      grid-template-columns: repeat(9, 80px);
+      gap: 2px;
+      background: #a2d149;
+      padding: 10px;
+      position: relative;
+    }
+    .cell {
+      width: 80px;
+      height: 80px;
+      background: #d6f5a7;
+      border-radius: 6px;
+      position: relative;
+      overflow: visible;
+    }
+    .plant {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      font-size: 40px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .zombie {
+      position: absolute;
+      right: 0;
+      top: 10px;
+      font-size: 38px;
+      z-index: 3;
+      transition: transform 0.1s;
+    }
+    .pea {
+      position: absolute;
+      left: 40px;
+      top: 32px;
+      width: 18px;
+      height: 18px;
+      background: #7ec850;
+      border-radius: 50%;
+      box-shadow: 0 0 4px #4e7e0e;
+      z-index: 4;
+    }
+    .sun-token {
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      left: 50%;
+      top: 10px;
+      transform: translateX(-50%);
+      background: #ffe066;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #e6b800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      cursor: pointer;
+      z-index: 10;
+      animation: sun-fall 2s linear;
+    }
+    @keyframes sun-fall {
+      from { top: -40px; }
+      to { top: 10px; }
+    }
+    #gameover {
+      position: absolute;
+      left: 0; right: 0; top: 0; bottom: 0;
+      background: #000a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: #fff;
+      z-index: 100;
+      flex-direction: column;
+    }
+    #restart {
+      margin-top: 30px;
+      font-size: 24px;
+      background: #ffe066;
+      color: #4e7e0e;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 30px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 2px 8px #0003;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="panel">
+      <div id="sun">☀️ <span id="sun-count">150</span></div>
+      <div class="plant-card" data-plant="peashooter">
+        <div class="plant-emoji">🌱</div>
+        <div>豌豆</div>
+        <div class="plant-cost">100</div>
+      </div>
+      <div class="plant-card" data-plant="sunflower">
+        <div class="plant-emoji">🌻</div>
+        <div>向日葵</div>
+        <div class="plant-cost">50</div>
+      </div>
+    </div>
+    <div id="lawn"></div>
+    <div id="gameover" style="display:none;">
+      游戏结束！<br>
+      <button id="restart">重新开始</button>
+    </div>
+  </div>
+  <script>
+    // 游戏参数
+    const ROWS = 5, COLS = 9;
+    const PLANTS = {
+      peashooter: { name: '豌豆', cost: 100, emoji: '🌱', cooldown: 5, attack: 20, rate: 1.5 },
+      sunflower: { name: '向日葵', cost: 50, emoji: '🌻', cooldown: 5, sun: 25, rate: 5 },
+    };
+    const ZOMBIE = { hp: 100, speed: 0.5, emoji: '🧟' };
+    let sun = 150;
+    let selectedPlant = null;
+    let plantCooldown = { peashooter: 0, sunflower: 0 };
+    let grid = [];
+    let plants = [];
+    let zombies = [];
+    let peas = [];
+    let suns = [];
+    let gameover = false;
+    let tick = 0;
+
+    // 初始化草坪
+    const lawn = document.getElementById('lawn');
+    function initLawn() {
+      lawn.innerHTML = '';
+      grid = [];
+      for (let r = 0; r < ROWS; r++) {
+        grid[r] = [];
+        for (let c = 0; c < COLS; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          cell.addEventListener('click', onCellClick);
+          lawn.appendChild(cell);
+          grid[r][c] = { plant: null, cell };
+        }
+      }
+    }
+
+    // 选择植物
+    document.querySelectorAll('.plant-card').forEach(card => {
+      card.onclick = () => {
+        document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedPlant = card.dataset.plant;
+      };
+    });
+
+    // 点击格子种植
+    function onCellClick(e) {
+      if (!selectedPlant || gameover) return;
+      const r = +this.dataset.row, c = +this.dataset.col;
+      if (grid[r][c].plant) return;
+      const plant = PLANTS[selectedPlant];
+      if (sun < plant.cost || plantCooldown[selectedPlant] > 0) return;
+      sun -= plant.cost;
+      plantCooldown[selectedPlant] = plant.cooldown;
+      grid[r][c].plant = { type: selectedPlant, row: r, col: c, hp: 100, last: 0 };
+      plants.push(grid[r][c].plant);
+      renderPlants();
+      updateSun();
+    }
+
+    // 渲染植物
+    function renderPlants() {
+      document.querySelectorAll('.plant').forEach(e => e.remove());
+      plants.forEach(p => {
+        const el = document.createElement('div');
+        el.className = 'plant';
+        el.style.left = (p.col * 82 + 16) + 'px';
+        el.style.top = (p.row * 82 + 16) + 'px';
+        el.textContent = PLANTS[p.type].emoji;
+        lawn.appendChild(el);
+      });
+    }
+
+    // 渲染僵尸
+    function renderZombies() {
+      document.querySelectorAll('.zombie').forEach(e => e.remove());
+      zombies.forEach(z => {
+        const el = document.createElement('div');
+        el.className = 'zombie';
+        el.style.left = (z.x) + 'px';
+        el.style.top = (z.row * 82 + 10) + 'px';
+        el.textContent = ZOMBIE.emoji;
+        lawn.appendChild(el);
+        z.el = el;
+      });
+    }
+
+    // 渲染豌豆
+    function renderPeas() {
+      document.querySelectorAll('.pea').forEach(e => e.remove());
+      peas.forEach(p => {
+        const el = document.createElement('div');
+        el.className = 'pea';
+        el.style.left = (p.x) + 'px';
+        el.style.top = (p.row * 82 + 32) + 'px';
+        lawn.appendChild(el);
+        p.el = el;
+      });
+    }
+
+    // 渲染阳光
+    function renderSuns() {
+      document.querySelectorAll('.sun-token').forEach(e => e.remove());
+      suns.forEach(s => {
+        const el = document.createElement('div');
+        el.className = 'sun-token';
+        el.style.left = (s.x) + 'px';
+        el.style.top = (s.y) + 'px';
+        el.innerHTML = '☀️';
+        el.onclick = () => {
+          sun += 25;
+          updateSun();
+          suns = suns.filter(ss => ss !== s);
+          renderSuns();
+        };
+        lawn.appendChild(el);
+        s.el = el;
+      });
+    }
+
+    // 更新阳光数
+    function updateSun() {
+      document.getElementById('sun-count').textContent = sun;
+    }
+
+    // 游戏主循环
+    function gameLoop() {
+      if (gameover) return;
+      tick++;
+      // 植物冷却
+      for (let k in plantCooldown) if (plantCooldown[k] > 0) plantCooldown[k]--;
+      // 植物行为
+      plants.forEach(p => {
+        if (p.type === 'sunflower') {
+          if (tick - p.last > PLANTS.sunflower.rate * 60) {
+            suns.push({ x: p.col * 82 + 40, y: p.row * 82 + 10, t: 0 });
+            p.last = tick;
+          }
+        } else if (p.type === 'peashooter') {
+          if (tick - p.last > PLANTS.peashooter.rate * 60) {
+            peas.push({ row: p.row, x: p.col * 82 + 50, dmg: PLANTS.peashooter.attack });
+            p.last = tick;
+          }
+        }
+      });
+      // 豌豆移动
+      peas.forEach(pea => {
+        pea.x += 8;
+        // 检查碰撞
+        zombies.forEach(z => {
+          if (z.row === pea.row && z.x < pea.x + 18 && z.x + 38 > pea.x) {
+            z.hp -= pea.dmg;
+            pea.hit = true;
+          }
+        });
+      });
+      peas = peas.filter(p => !p.hit && p.x < 900);
+      // 僵尸移动
+      zombies.forEach(z => {
+        // 检查前方是否有植物
+        let col = Math.floor((z.x + 10) / 82);
+        let plant = plants.find(p => p.row === z.row && p.col === col);
+        if (plant && z.x < (plant.col * 82 + 40)) {
+          plant.hp -= 0.5;
+          z.el && (z.el.style.transform = 'scaleX(-1)');
+        } else {
+          z.x -= ZOMBIE.speed;
+          z.el && (z.el.style.transform = '');
+        }
+      });
+      // 僵尸死亡
+      zombies = zombies.filter(z => z.hp > 0 && z.x > -40);
+      // 植物死亡
+      plants = plants.filter(p => p.hp > 0);
+      // 阳光掉落
+      suns.forEach(s => { s.y += 1; });
+      suns = suns.filter(s => s.y < 400);
+      // 僵尸生成
+      if (tick % 180 === 0) {
+        let row = Math.floor(Math.random() * ROWS);
+        zombies.push({ row, x: 900, hp: ZOMBIE.hp });
+      }
+      // 检查游戏结束
+      if (zombies.some(z => z.x < 0)) {
+        document.getElementById('gameover').style.display = 'flex';
+        gameover = true;
+      }
+      renderPlants();
+      renderZombies();
+      renderPeas();
+      renderSuns();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // 重新开始
+    document.getElementById('restart').onclick = () => {
+      sun = 150;
+      selectedPlant = null;
+      plantCooldown = { peashooter: 0, sunflower: 0 };
+      plants = [];
+      zombies = [];
+      peas = [];
+      suns = [];
+      gameover = false;
+      tick = 0;
+      document.getElementById('gameover').style.display = 'none';
+      document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('selected'));
+      initLawn();
+      updateSun();
+      renderPlants();
+      renderZombies();
+      renderPeas();
+      renderSuns();
+      requestAnimationFrame(gameLoop);
+    };
+
+    // 初始化
+    initLawn();
+    updateSun();
+    renderPlants();
+    renderZombies();
+    renderPeas();
+    renderSuns();
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
