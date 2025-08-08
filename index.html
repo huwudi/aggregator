@@ -26,34 +26,40 @@
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: radial-gradient(1200px 600px at 50% -200px, #17313a, #0c2128); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
 
-    .app { max-width: calc(var(--field-w) + 32px); margin: 18px auto 28px; padding: 0 16px; }
+    .app { max-width: calc(var(--field-w) + 32px); margin: 12px auto 28px; padding: 0 16px; }
 
-    .topbar { background: linear-gradient(180deg, var(--bar), var(--bar-2)); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; box-shadow: var(--shadow); padding: 10px 14px; }
-    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .topbar { position: sticky; top: 8px; z-index: 20; background: linear-gradient(180deg, var(--bar), var(--bar-2)); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; box-shadow: var(--shadow); padding: 10px 14px; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 
     .sun-box { display: inline-flex; align-items: center; gap: 8px; background: rgba(242,193,78,0.12); color: var(--accent); border: 1px solid rgba(242,193,78,0.35); padding: 6px 10px; border-radius: 10px; font-weight: 800; letter-spacing: 0.3px; }
 
     .seedbar { display: flex; gap: 8px; flex-wrap: wrap; }
 
-    .card { position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); min-width: 120px; cursor: pointer; user-select: none; transition: transform 0.06s ease, background 0.2s ease; }
+    .card { position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); min-width: 124px; cursor: pointer; user-select: none; transition: transform 0.06s ease, background 0.2s ease, opacity 0.2s ease, filter 0.2s ease; }
     .card:hover { transform: translateY(-1px); background: rgba(255,255,255,0.1); }
     .card.active { outline: 2px solid var(--accent); }
     .card .emoji { font-size: 20px; }
     .card .title { font-weight: 700; }
     .card .cost { color: var(--accent); font-weight: 800; }
-    .card .cd { position: absolute; inset: 0; background: rgba(0,0,0,0.55); border-radius: 10px; display: none; }
+    .card .cd { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.65)); border-radius: 10px; display: none; }
     .card.cooling .cd { display: block; }
     .card .cd::after { content: attr(data-left); position: absolute; bottom: 4px; right: 8px; color: #ffd479; font-size: 12px; }
+    .card .badge { position: absolute; top: 3px; right: 6px; color: var(--accent-2); font-weight: 800; font-size: 11px; display: none; }
+    .card.disabled { opacity: 0.55; filter: grayscale(0.2); }
+    .card.disabled .badge { display: block; }
 
     .right-tools { display:flex; align-items:center; gap: 8px; }
     .btn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: var(--text); padding: 8px 12px; border-radius: 10px; cursor: pointer; user-select: none; transition: transform 0.06s ease, background 0.2s ease; }
     .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.1); }
     .btn.active { outline: 2px solid var(--accent); background: rgba(242, 193, 78, 0.13); }
 
-    .progress { position: relative; height: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; overflow: hidden; }
+    .progress { position: relative; height: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; overflow: hidden; min-width: 220px; }
     .progress > .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, #52d17a, #33b1ff); box-shadow: inset 0 0 10px rgba(255,255,255,0.25); }
 
-    .field { position: relative; width: var(--field-w); height: var(--field-h); margin: 12px auto 0; border-radius: 16px; overflow: hidden; background: linear-gradient(180deg, var(--green-1), var(--green-2)); border: 2px solid rgba(255,255,255,0.12); box-shadow: var(--shadow); }
+    .board-outer { display:flex; justify-content:center; margin-top:12px; }
+    .board-scale { transform-origin: top center; will-change: transform; }
+
+    .field { position: relative; width: var(--field-w); height: var(--field-h); border-radius: 16px; overflow: hidden; background: linear-gradient(180deg, var(--green-1), var(--green-2)); border: 2px solid rgba(255,255,255,0.12); box-shadow: var(--shadow); }
     .row-stripe { position: absolute; left: 0; width: 100%; height: var(--tile-h); }
     .row-stripe:nth-child(odd) { background: rgba(0,0,0,0.05); }
     .grid { position: absolute; inset: 0; pointer-events:none; background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px); background-size: var(--tile-w) var(--tile-h), var(--tile-w) var(--tile-h); }
@@ -62,7 +68,7 @@
     .tile:hover { outline: 2px dashed rgba(255,255,255,0.25); outline-offset: -2px; }
 
     .entities { position: absolute; inset: 0; }
-    .plant, .zombie, .pea, .snowpea, .boom, .sun-token, .mower { position: absolute; will-change: transform; }
+    .plant, .zombie, .pea, .snowpea, .boom, .sun-token, .mower, .ghost { position: absolute; will-change: transform; }
 
     .plant { width: calc(var(--tile-w) - 10px); height: calc(var(--tile-h) - 10px); transform: translate(5px, 5px); border-radius: 12px; display: grid; place-items: center; font-size: 22px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.25); border: 2px solid rgba(0,0,0,0.1); color: #102015; }
     .plant.peashooter { background: #64c86a; }
@@ -73,6 +79,11 @@
     .plant.cherry { background: #ff6b6b; color: #380606; }
     .plant.potatomine { background: #9a6c43; }
     .plant.spikeweed { background: #546b2f; color: #cfe28a; }
+
+    .ghost { width: calc(var(--tile-w) - 10px); height: calc(var(--tile-h) - 10px); transform: translate(5px, 5px); border-radius: 12px; display: grid; place-items: center; font-size: 22px; font-weight: 800; color: #102015; background: rgba(255,255,255,0.45); border: 2px dashed rgba(255,255,255,0.8); pointer-events:none; opacity: 0; transition: opacity .15s ease, filter .15s ease, border-color .15s ease; }
+    .ghost.show { opacity: 1; }
+    .ghost.valid { border-color: rgba(82,209,122,0.9); box-shadow: 0 0 0 2px rgba(82,209,122,0.35) inset; }
+    .ghost.invalid { filter: grayscale(1) brightness(0.85); border-color: rgba(255,109,102,0.9); box-shadow: 0 0 0 2px rgba(255,109,102,0.3) inset; }
 
     .zombie { width: 62px; height: 80px; background: #9aa9aa; border: 2px solid #6f7e7e; border-radius: 10px; display: grid; place-items: center; font-size: 20px; color: #202b2b; font-weight: 800; }
     .zombie.cone { background: linear-gradient(#9aa9aa, #8d9a9a); border-color: #7c8b8b; }
@@ -95,7 +106,7 @@
     .overlay h2 { margin: 0 0 8px; }
 
     .muted { opacity: 0.75; }
-    .small { font-size: 12px; opacity: 0.85; }
+    .small { font-size: 12px; opacity: 0.85; text-align: center; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -111,27 +122,31 @@
       </div>
       <div class="row">
         <div class="seedbar" id="seedBar"></div>
-        <div class="progress" style="width:320px" title="关卡进度">
+        <div class="progress" title="关卡进度">
           <div class="bar" id="waveProgress"></div>
         </div>
       </div>
     </div>
 
-    <div class="field" id="field">
-      <div id="stripes"></div>
-      <div class="grid"></div>
-      <div class="tiles" id="tiles"></div>
-      <div class="entities" id="entities"></div>
-      <div class="overlay" id="overlay" hidden>
-        <div class="panel">
-          <h2 id="overlayTitle">游戏结束</h2>
-          <div class="muted" id="overlayDesc">僵尸冲破了你的防线…</div>
-          <div style="height: 12px"></div>
-          <div class="btn" id="overlayRestart">再来一局</div>
+    <div class="board-outer">
+      <div id="boardScale" class="board-scale">
+        <div class="field" id="field">
+          <div id="stripes"></div>
+          <div class="grid"></div>
+          <div class="tiles" id="tiles"></div>
+          <div class="entities" id="entities"></div>
+          <div class="overlay" id="overlay" hidden>
+            <div class="panel">
+              <h2 id="overlayTitle">游戏结束</h2>
+              <div class="muted" id="overlayDesc">僵尸冲破了你的防线…</div>
+              <div style="height: 12px"></div>
+              <div class="btn" id="overlayRestart">再来一局</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="small muted" style="margin-top:8px">提示：选卡放置植物；卡片有冷却与阳光费用。点击阳光收集。铲子移除植物。每行割草机可救一次。</div>
+    <div class="small muted">提示：选卡放置植物（有冷却与阳光费用）。卡片灰色=阳光不足，黑遮罩=冷却中。鼠标移到格子会显示放置预览。</div>
   </div>
 
   <script>
@@ -167,13 +182,12 @@
 
     const plants = new Set();
     const zombies = new Set();
-    const projectiles = new Set(); // {id,row,x,type:'pea'|'snow', damage, slow?}
+    const projectiles = new Set();
     const suns = new Set();
     const mowers = new Set();
 
-    let waveStartAt = 0; let skySunHandle = null; let spawnHandle = null; let progressEl;
+    let waveStartAt = 0; let skySunHandle = null; let spawnHandle = null;
 
-    // 卡片冷却状态
     const cardCooldown = {}; // plantId -> nextUsableTs
 
     // ---------------- DOM ----------------
@@ -185,12 +199,15 @@
     const overlayTitleEl = document.getElementById('overlayTitle');
     const overlayDescEl = document.getElementById('overlayDesc');
     const waveProgressEl = document.getElementById('waveProgress');
+    const boardScaleEl = document.getElementById('boardScale');
 
     let selectedTool = { type:'plant', value:'peashooter' };
+    let hoverCell = null; // {row, col}
+    let ghostEl = null;
 
     function $all(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
 
-    function updateSunUI(){ sunCountEl.textContent = sun; updateCardsUI(); }
+    function updateSunUI(){ sunCountEl.textContent = sun; updateCardsUI(); updateGhostValidity(); }
 
     function addStripeRows(){
       stripesEl.innerHTML = '';
@@ -203,13 +220,12 @@
       tilesEl.innerHTML='';
       for (let r=0;r<ROWS;r++){
         for (let c=0;c<COLS;c++){
-          const t=document.createElement('div'); t.className='tile'; t.dataset.row=r; t.dataset.col=c; t.addEventListener('click', onTileClick); tilesEl.appendChild(t);
+          const t=document.createElement('div'); t.className='tile'; t.dataset.row=r; t.dataset.col=c; t.addEventListener('click', onTileClick); t.addEventListener('mouseenter', onTileEnter); t.addEventListener('mouseleave', onTileLeave); tilesEl.appendChild(t);
         }
       }
     }
 
     function buildMowers(){
-      // one per row at the very left
       for (let r=0;r<ROWS;r++){
         const mower = { id:`m_${r}`, row:r, x:-20, active:false, el:null };
         mowers.add(mower);
@@ -224,17 +240,17 @@
 
       function cardEl(def){
         const el=document.createElement('div'); el.className='card'; el.dataset.plant=def.id;
-        el.innerHTML=`<div class="emoji">${def.emoji}</div><div><div class="title">${def.name}</div><div class="cost">${def.cost}</div></div><div class="cd" data-left=""></div>`;
+        el.innerHTML=`<div class="emoji">${def.emoji}</div><div><div class="title">${def.name}</div><div class="cost">${def.cost}</div></div><div class="badge">☀️不足</div><div class="cd" data-left=""></div>`;
         el.addEventListener('click', ()=>{
           selectedTool = { type:'plant', value:def.id };
           document.getElementById('shovelBtn').classList.remove('active');
           $all('.card').forEach(c=>c.classList.remove('active'));
           el.classList.add('active');
+          ensureGhost(); updateGhostValidity();
         });
         return el;
       }
 
-      // default select first
       const first = sb.querySelector('.card'); if (first) first.classList.add('active');
     }
 
@@ -245,25 +261,26 @@
         const leftMs = Math.max(0, cardCooldown[id] - now);
         const affordable = sun >= def.cost;
         el.classList.toggle('cooling', leftMs > 0);
-        el.style.opacity = affordable ? '1' : '0.6';
-        const cd = el.querySelector('.cd');
-        if (leftMs > 0){
-          cd.dataset.left = `${Math.ceil(leftMs/1000)}s`;
-        } else { cd.dataset.left=''; }
+        el.classList.toggle('disabled', !affordable);
+        const cd = el.querySelector('.cd'); cd.dataset.left = leftMs > 0 ? `${Math.ceil(leftMs/1000)}s` : '';
       }
     }
 
-    // ---------------- 放置/移除 ----------------
+    // ---------------- 放置/移除 + 预览幽灵 ----------------
+    function onTileEnter(e){ hoverCell = { row: Number(e.currentTarget.dataset.row), col: Number(e.currentTarget.dataset.col) }; ensureGhost(); positionGhost(); updateGhostValidity(); }
+    function onTileLeave(){ hoverCell = null; if (ghostEl) ghostEl.classList.remove('show'); }
+
+    function ensureGhost(){ if (selectedTool.type!=='plant') return; if (ghostEl) return; ghostEl = document.createElement('div'); ghostEl.className='ghost'; entitiesEl.appendChild(ghostEl); ghostEl.textContent = PLANTS[selectedTool.value]?.emoji || '🌿'; }
+    function positionGhost(){ if (!ghostEl || !hoverCell) return; ghostEl.style.left = `${hoverCell.col*TILE_W}px`; ghostEl.style.top = `${hoverCell.row*TILE_H}px`; ghostEl.classList.add('show'); ghostEl.textContent = PLANTS[selectedTool.value]?.emoji || '🌿'; }
+    function canPlace(id,row,col){ const def=PLANTS[id]; const now=performance.now(); if (!def) return false; if (cardCooldown[id]>now) return false; if (sun<def.cost) return false; if (grid[row][col]) return false; return true; }
+    function updateGhostValidity(){ if (!ghostEl || !hoverCell || selectedTool.type!=='plant') return; const ok = canPlace(selectedTool.value, hoverCell.row, hoverCell.col); ghostEl.classList.toggle('valid', ok); ghostEl.classList.toggle('invalid', !ok); }
+
     function onTileClick(e){
       if (!running || paused) return;
       const row = Number(e.currentTarget.dataset.row); const col = Number(e.currentTarget.dataset.col);
       const existing = grid[row][col];
       if (selectedTool.type==='shovel'){ if (existing) removePlant(existing); return; }
-      const id = selectedTool.value; const def = PLANTS[id];
-      const now = performance.now();
-      if (cardCooldown[id] > now) return; if (sun < def.cost) return; if (existing) return;
-      placePlant(id, row, col);
-    }
+      const id = selectedTool.value; if (!canPlace(id,row,col)) return; placePlant(id, row, col); updateGhostValidity(); }
 
     function placePlant(id,row,col){
       const def = PLANTS[id];
@@ -271,32 +288,21 @@
       const plant = { id:`p_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, type:id, row, col, hp:def.hp, nextFireAt:0, nextSunAt:0, armedAt: (def.armTime? performance.now()+def.armTime: 0), el:null };
       plants.add(plant); grid[row][col]=plant;
       const el=document.createElement('div'); el.className = `plant ${def.className}`; el.style.left = `${col*TILE_W}px`; el.style.top = `${row*TILE_H}px`; el.textContent = def.emoji; el.title = `${def.name} HP:${plant.hp}`; entitiesEl.appendChild(el); plant.el=el;
-
-      // Cherry immediate schedule boom
       if (id==='cherry') { setTimeout(()=>explodeAt(row, col, def.radius, def.damage, plant), def.armedDelay); }
     }
 
     function removePlant(plant){ plants.delete(plant); if (grid[plant.row][plant.col]===plant) grid[plant.row][plant.col]=null; plant.el?.remove(); }
 
-    // ---------------- 僵尸 ----------------
+    // ---------------- 僵尸波次 ----------------
     function spawnZombieWaveController(){
-      // dynamic spawn pacing across level duration
       const start = performance.now(); waveStartAt = start;
-      // sky sun
       if (skySunHandle) clearInterval(skySunHandle); skySunHandle = setInterval(spawnSkySun, LEVEL.skySunEvery);
-      // enemy spawns
       if (spawnHandle) clearInterval(spawnHandle);
       spawnHandle = setInterval(()=>{
         const t = performance.now() - start; const ratio = t / LEVEL.duration;
-        // choose type by phase
-        let pool = ['normal'];
-        if (ratio > 0.2) pool.push('cone');
-        if (ratio > 0.5) pool.push('imp');
-        if (ratio > 0.7) pool.push('bucket');
-        // spawn 1-2 zombies occasionally
+        let pool = ['normal']; if (ratio > 0.2) pool.push('cone'); if (ratio > 0.5) pool.push('imp'); if (ratio > 0.7) pool.push('bucket');
         const count = Math.random() < (ratio>0.6?0.35:0.15) ? 2 : 1;
         for (let i=0;i<count;i++) spawnZombie(randRow(), pick(pool));
-        // end spawns when time reached
         if (t >= LEVEL.duration){ clearInterval(spawnHandle); spawnHandle=null; }
       }, 2200);
     }
@@ -330,30 +336,33 @@
     function spawnSkySun(){ const x = Math.random()*(COLS*TILE_W - 44); spawnSunToken(x, -10, false); }
 
     // ---------------- 割草机 ----------------
-    function triggerMower(row){
-      const mower = Array.from(mowers).find(m=>m.row===row && !m.active);
-      if (!mower) return false; mower.active=true; return true;
-    }
+    function triggerMower(row){ const mower = Array.from(mowers).find(m=>m.row===row && !m.active); if (!mower) return false; mower.active=true; return true; }
 
     // ---------------- 伤害/爆炸 ----------------
     function explodeAt(row, col, radius, damage, plantRef){
-      // visual
       const cx = col*TILE_W + TILE_W/2; const cy = row*TILE_H + TILE_H/2;
       const boom = document.createElement('div'); boom.className='boom'; boom.style.left = `${cx-70}px`; boom.style.top = `${cy-70}px`; entitiesEl.appendChild(boom); setTimeout(()=>boom.remove(), 300);
       for (const z of Array.from(zombies)){
-        if (z.row!==row) continue; // restrict to row like PVZ cherry covers 3x3, but keep row for simplicity
-        const zx = z.x + 30; const dx = Math.abs(zx - cx);
+        if (z.row!==row) continue; const zx = z.x + 30; const dx = Math.abs(zx - cx);
         if (dx <= radius){ z.hp -= damage; if (z.hp<=0){ z.el?.remove(); zombies.delete(z);} }
       }
       if (plantRef) removePlant(plantRef);
     }
 
-    // ---------------- 主循环 ----------------
-    function anyZombieAhead(row, col){
-      const xRight = (col+1)*TILE_W - 10;
-      for (const z of zombies){ if (z.row===row && z.x >= xRight) return true; }
-      return false;
+    // ---------------- 自适应缩放 ----------------
+    function fitScale(){
+      // Keep aspect ratio and fit within viewport
+      const fieldW = COLS*TILE_W; const fieldH = ROWS*TILE_H;
+      const margin = 24;
+      const topbar = document.querySelector('.topbar');
+      const availW = Math.max(320, window.innerWidth - margin*2);
+      const availH = Math.max(300, window.innerHeight - (topbar?.offsetHeight||0) - margin*2);
+      const scale = Math.min(1, availW / fieldW, availH / fieldH);
+      boardScaleEl.style.transform = `scale(${scale})`;
     }
+
+    // ---------------- 主循环 ----------------
+    function anyZombieAhead(row, col){ const xRight = (col+1)*TILE_W - 10; for (const z of zombies){ if (z.row===row && z.x >= xRight) return true; } return false; }
 
     function update(dt){
       const now = performance.now();
@@ -369,17 +378,14 @@
         } else if (p.type==='sunflower'){
           if (now>=p.nextSunAt){ p.nextSunAt = now + def.sunInterval; const x=p.col*TILE_W + (TILE_W/2 - 20); const y=p.row*TILE_H + (TILE_H/2 - 20); spawnSunToken(x,y,true); }
         } else if (p.type==='spikeweed'){
-          // damage zombies standing on same tile
           const left = p.col*TILE_W; const right = left + TILE_W;
           for (const z of zombies){ if (z.row===p.row && z.x+30 >= left && z.x+30 <= right){ z.hp -= def.dps * dt; if (z.hp<=0){ z.el?.remove(); zombies.delete(z);} } }
         } else if (p.type==='potatomine'){
-          // if armed and zombie steps on tile -> explode small radius
           if (now >= p.armedAt){ p.el.style.filter='saturate(1.1) brightness(1.1)'; const cx=p.col*TILE_W+TILE_W/2; for (const z of Array.from(zombies)){ if (z.row!==p.row) continue; const zx=z.x+30; if (Math.abs(zx-cx) < 30){ explodeAt(p.row, p.col, PLANTS.potatomine.radius, PLANTS.potatomine.damage, p); break; } } }
         }
-        // Wall-nut passive tank only
       }
 
-      // Projectiles move & collide
+      // Projectiles
       for (const pr of Array.from(projectiles)){
         const spec = pr.type==='snow'? SNOWPEA : PEA; pr.x += spec.speed * dt; if (pr.x > COLS*TILE_W + 30){ projectiles.delete(pr); pr.el?.remove(); continue; }
         pr.el.style.left = `${pr.x}px`;
@@ -391,50 +397,32 @@
         }
       }
 
-      // Zombies move / bite
+      // Zombies
       for (const z of Array.from(zombies)){
         const def = ZOMBIES[z.type]; const isSlowed = (z.slowedUntil || 0) > now; if (!isSlowed) z.el.classList.remove('slowed');
         const speed = def.speed * (isSlowed ? SNOWPEA.slowFactor : 1);
-        // mower check first
         if (!z.attacking){
-          // if reaches left edge: trigger mower if available; otherwise lose
-          if (z.x <= 6){
-            if (triggerMower(z.row)){
-              // mower will handle kill; keep zombie to be killed by mower sweep soon
-            } else {
-              endGame(false); return;
-            }
-          }
+          if (z.x <= 6){ if (triggerMower(z.row)){} else { endGame(false); return; } }
         }
-
-        // attack detection
         if (!z.attacking){
-          // Check plant at current tile to bite (exclude spikeweed)
           const col = Math.max(0, Math.floor(z.x / TILE_W)); if (col>=0 && col<COLS){ const plant = grid[z.row][col]; if (plant && plant.type!=='spikeweed' && plant.type!=='cherry' && plant.type!=='potatomine'){ z.attacking=true; z.targetPlant=plant; } }
         }
-
         if (!z.attacking){ z.x -= speed * dt; z.el.style.left = `${z.x}px`; }
-        else {
-          const target = z.targetPlant; if (!target || !plants.has(target)){ z.attacking=false; z.targetPlant=null; continue; }
-          target.hp -= def.dps * dt; target.el.title = `${PLANTS[target.type].name} HP:${Math.max(0, target.hp|0)}`;
-          if (target.hp <= 0){ removePlant(target); z.attacking=false; z.targetPlant=null; }
-        }
+        else { const target = z.targetPlant; if (!target || !plants.has(target)){ z.attacking=false; z.targetPlant=null; continue; } target.hp -= def.dps * dt; target.el.title = `${PLANTS[target.type].name} HP:${Math.max(0, target.hp|0)}`; if (target.hp <= 0){ removePlant(target); z.attacking=false; z.targetPlant=null; } }
       }
 
-      // Mowers sweep
+      // Mowers
       for (const m of Array.from(mowers)){
-        if (!m.active) continue; m.x += 300*dt; m.el.style.left = `${m.x}px`;
-        for (const z of Array.from(zombies)){ if (z.row===m.row && z.x < m.x + 50){ zombies.delete(z); z.el?.remove(); } }
-        if (m.x > COLS*TILE_W + 80){ m.el?.remove(); mowers.delete(m); }
+        if (!m.active) continue; m.x += 300*dt; m.el.style.left = `${m.x}px`; for (const z of Array.from(zombies)){ if (z.row===m.row && z.x < m.x + 50){ zombies.delete(z); z.el?.remove(); } } if (m.x > COLS*TILE_W + 80){ m.el?.remove(); mowers.delete(m); }
       }
 
-      // Suns falling / lifetime
+      // Suns
       for (const s of Array.from(suns)){
         if (!s.fromPlant){ s.y += s.vy * dt; const maxY = ROWS*TILE_H - 52; if (s.y > maxY) s.y = maxY; s.el.style.top = `${s.y}px`; }
         if (now >= s.expireAt){ s.el?.remove(); suns.delete(s); }
       }
 
-      // progress
+      // Progress
       const elapsed = now - waveStartAt; const ratio = Math.max(0, Math.min(1, elapsed/LEVEL.duration)); waveProgressEl.style.width = `${ratio*100}%`;
       if (elapsed >= LEVEL.duration && zombies.size===0 && running){ endGame(true); }
     }
@@ -445,7 +433,6 @@
     function endGame(win){ running=false; clearInterval(skySunHandle); skySunHandle=null; clearInterval(spawnHandle); spawnHandle=null; overlayTitleEl.textContent = win? '你赢了！' : '游戏结束'; overlayDescEl.textContent = win? '成功顶住了所有波次！' : '僵尸冲破了你的防线…'; overlayEl.hidden = false; }
 
     function restart(){
-      // Clear state
       for (const p of Array.from(plants)) removePlant(p);
       for (const z of Array.from(zombies)) { z.el?.remove(); zombies.delete(z); }
       for (const pr of Array.from(projectiles)) { pr.el?.remove(); projectiles.delete(pr); }
@@ -453,14 +440,13 @@
       for (const m of Array.from(mowers)) { m.el?.remove(); mowers.delete(m); }
       for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++) grid[r][c]=null;
 
-      // Reset
       sun = 150; updateSunUI(); running=true; paused=false; overlayEl.hidden=true; lastTs=performance.now();
-      // reset seed packet cooldowns
       for (const id in PLANTS) { cardCooldown[id] = 0; }
       updateCardsUI();
       buildMowers();
       spawnZombieWaveController();
       requestAnimationFrame(loop);
+      fitScale();
     }
 
     // ---------------- 事件/初始化 ----------------
@@ -470,12 +456,12 @@
         const active = btn.classList.toggle('active');
         selectedTool = active? {type:'shovel'} : { type:'plant', value:'peashooter' };
         $all('.card').forEach(c=>c.classList.remove('active'));
+        if (ghostEl) { ghostEl.classList.remove('show'); }
       });
       document.getElementById('restartBtn').addEventListener('click', ()=>restart());
       document.getElementById('overlayRestart').addEventListener('click', ()=>restart());
-      document.getElementById('pauseBtn').addEventListener('click', ()=>{
-        paused = !paused; document.getElementById('pauseBtn').textContent = paused? '▶️ 继续' : '⏸️ 暂停';
-      });
+      document.getElementById('pauseBtn').addEventListener('click', ()=>{ paused = !paused; document.getElementById('pauseBtn').textContent = paused? '▶️ 继续' : '⏸️ 暂停'; });
+      window.addEventListener('resize', ()=>{ clearTimeout(window.__rsz); window.__rsz = setTimeout(fitScale, 100); });
     }
 
     function init(){ addStripeRows(); buildTiles(); buildSeedBar(); setupToolbar(); updateSunUI(); spawnSkySun(); restart(); }
