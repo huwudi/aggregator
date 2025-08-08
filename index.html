@@ -24,7 +24,7 @@
         
         #gameCanvas {
             border: 3px solid #8B4513;
-            background: #90EE90;
+            background: linear-gradient(to bottom, #87CEEB 0%, #90EE90 30%, #228B22 100%);
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
@@ -36,6 +36,10 @@
             font-size: 18px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
             z-index: 10;
+            background: rgba(139, 69, 19, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #8B4513;
         }
         
         #plantCards {
@@ -132,9 +136,14 @@
         <canvas id="gameCanvas" width="1000" height="600"></canvas>
         
         <div id="ui">
-            <div>阳光: <span id="sunCount">50</span></div>
+            <div>阳光: <span id="sunCount">150</span></div>
             <div>波次: <span id="waveCount">1</span></div>
             <div>生命: <span id="lives">3</span></div>
+            <div style="font-size: 12px; margin-top: 10px;">
+                <div>点击植物卡片选择</div>
+                <div>点击网格种植</div>
+                <div>点击阳光收集</div>
+            </div>
         </div>
         
         <div id="plantCards">

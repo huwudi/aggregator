@@ -9,7 +9,7 @@ class Game {
         // 游戏状态
         this.gameState = 'playing'; // playing, paused, gameOver, victory
         this.selectedPlant = null;
-        this.sun = 50;
+        this.sun = 150;
         this.lives = 3;
         this.wave = 1;
         this.waveProgress = 0;
@@ -26,10 +26,10 @@ class Game {
         // 网格系统 (5行9列)
         this.gridRows = 5;
         this.gridCols = 9;
-        this.gridStartX = 100;
-        this.gridStartY = 100;
-        this.cellWidth = 80;
-        this.cellHeight = 100;
+        this.gridStartX = 220;
+        this.gridStartY = 80;
+        this.cellWidth = 82;
+        this.cellHeight = 98;
         this.grid = this.createGrid();
         
         // 时间管理
@@ -116,6 +116,10 @@ class Game {
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         
+        // 保存鼠标位置用于预览
+        this.mouseX = x;
+        this.mouseY = y;
+        
         // 检查鼠标是否悬停在阳光上
         let overSun = false;
         for (const sun of this.suns) {
@@ -135,11 +139,18 @@ class Game {
     }
     
     plantAt(x, y) {
+        console.log('plantAt called:', x, y, 'selectedPlant:', this.selectedPlant);
         const gridPos = this.getGridPosition(x, y);
+        console.log('gridPos:', gridPos);
+        
         if (gridPos && this.canPlantAt(gridPos.row, gridPos.col)) {
             const cost = PlantFactory.getCost(this.selectedPlant);
+            console.log('Plant cost:', cost, 'Current sun:', this.sun);
+            
             if (this.sun >= cost) {
                 const plant = PlantFactory.createPlant(this.selectedPlant, gridPos.row, gridPos.col, this);
+                console.log('Plant created:', plant);
+                
                 this.plants.push(plant);
                 this.grid[gridPos.row][gridPos.col] = plant;
                 this.sun -= cost;
@@ -149,8 +160,15 @@ class Game {
                 this.selectedPlant = null;
                 document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('selected'));
                 this.canvas.style.cursor = 'default';
+                console.log('Plant placed successfully');
+                return true;
+            } else {
+                console.log('Not enough sun');
             }
+        } else {
+            console.log('Cannot plant at this position');
         }
+        return false;
     }
     
     getGridPosition(x, y) {
@@ -419,8 +437,8 @@ class Game {
     }
     
     drawGrid() {
-        this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
-        this.ctx.lineWidth = 1;
+        this.ctx.strokeStyle = 'rgba(139, 69, 19, 0.3)';
+        this.ctx.lineWidth = 2;
         
         // 绘制垂直线
         for (let col = 0; col <= this.gridCols; col++) {
@@ -442,9 +460,49 @@ class Game {
     }
     
     drawPlantPreview() {
-        // 这里可以添加植物预览的绘制逻辑
-        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.3)';
-        // 根据鼠标位置绘制预览
+        // 获取鼠标位置
+        const mouseX = this.mouseX || 0;
+        const mouseY = this.mouseY || 0;
+        
+        const gridPos = this.getGridPosition(mouseX, mouseY);
+        if (gridPos && this.canPlantAt(gridPos.row, gridPos.col)) {
+            const x = this.gridStartX + gridPos.col * this.cellWidth + this.cellWidth / 2;
+            const y = this.gridStartY + gridPos.row * this.cellHeight + this.cellHeight / 2;
+            
+            // 绘制预览格子
+            this.ctx.save();
+            this.ctx.globalAlpha = 0.5;
+            this.ctx.fillStyle = '#00FF00';
+            this.ctx.fillRect(
+                this.gridStartX + gridPos.col * this.cellWidth,
+                this.gridStartY + gridPos.row * this.cellHeight,
+                this.cellWidth,
+                this.cellHeight
+            );
+            
+            // 绘制植物预览图标
+            this.ctx.globalAlpha = 0.7;
+            this.ctx.fillStyle = '#FFFFFF';
+            this.ctx.font = '24px Arial';
+            this.ctx.textAlign = 'center';
+            
+            let icon = '';
+            switch(this.selectedPlant) {
+                case 'sunflower': icon = '🌻'; break;
+                case 'peashooter': icon = '🌱'; break;
+                case 'wallnut': icon = '🥜'; break;
+                case 'repeater': icon = '🌿'; break;
+                case 'snowpea': icon = '❄️'; break;
+                case 'cherrybomb': icon = '🍒'; break;
+                case 'potatomine': icon = '🥔'; break;
+                case 'threepeater': icon = '🌾'; break;
+                case 'tallnut': icon = '🌰'; break;
+                case 'pumpkin': icon = '🎃'; break;
+            }
+            
+            this.ctx.fillText(icon, x, y + 8);
+            this.ctx.restore();
+        }
     }
     
     gameLoop() {
@@ -1650,10 +1708,30 @@ class BackgroundManager {
     }
     
     render(ctx) {
+        // 绘制天空渐变
+        const gradient = ctx.createLinearGradient(0, 0, 0, this.game.height);
+        gradient.addColorStop(0, '#87CEEB');
+        gradient.addColorStop(0.3, '#98FB98');
+        gradient.addColorStop(1, '#228B22');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, this.game.width, this.game.height);
+        
+        // 绘制草坪行
+        for (let row = 0; row < this.game.gridRows; row++) {
+            const y = this.game.gridStartY + row * this.game.cellHeight;
+            const rowColor = row % 2 === 0 ? '#32CD32' : '#228B22';
+            ctx.fillStyle = rowColor;
+            ctx.fillRect(this.game.gridStartX, y, this.game.gridCols * this.game.cellWidth, this.game.cellHeight);
+        }
+        
         // 绘制草地纹理
+        ctx.globalAlpha = 0.3;
         const pattern = ctx.createPattern(this.grassPattern, 'repeat');
         ctx.fillStyle = pattern;
-        ctx.fillRect(0, 0, this.game.width, this.game.height);
+        ctx.fillRect(this.game.gridStartX, this.game.gridStartY, 
+                    this.game.gridCols * this.game.cellWidth, 
+                    this.game.gridRows * this.game.cellHeight);
+        ctx.globalAlpha = 1;
         
         // 绘制云朵
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
@@ -1830,7 +1908,7 @@ Game.prototype.render = function() {
 const originalPlantAt = Game.prototype.plantAt;
 Game.prototype.plantAt = function(x, y) {
     const result = originalPlantAt.call(this, x, y);
-    if (result !== false && this.audioManager) {
+    if (result === true && this.audioManager) {
         this.audioManager.play('plant');
         if (this.stats) {
             this.stats.addPlantPlanted();
