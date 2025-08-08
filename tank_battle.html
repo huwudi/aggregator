@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>坦克大战 Tank Battle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #222;
+            color: #fff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            height: 100%;
+        }
+        #game-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            margin-top: 30px;
+        }
+        #ui-panel {
+            width: 260px;
+            margin-left: 30px;
+            background: #333;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px #000a;
+        }
+        #game-canvas {
+            background: #111;
+            border: 4px solid #666;
+            border-radius: 8px;
+            box-shadow: 0 0 20px #000a;
+        }
+        .ui-section {
+            margin-bottom: 20px;
+        }
+        .ui-section h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.2em;
+            color: #ffb300;
+        }
+        .score, .lives, .level, .status {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        #start-btn, #restart-btn {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.1em;
+            background: #ffb300;
+            color: #222;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+        #start-btn:hover, #restart-btn:hover {
+            background: #ffa000;
+        }
+        #instructions {
+            font-size: 0.95em;
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <div id="ui-panel">
+            <div class="ui-section">
+                <h2>游戏信息</h2>
+                <div class="score">得分: <span id="score">0</span></div>
+                <div class="lives">生命: <span id="lives">3</span></div>
+                <div class="level">关卡: <span id="level">1</span></div>
+                <div class="status">状态: <span id="status">准备</span></div>
+            </div>
+            <div class="ui-section">
+                <button id="start-btn">开始游戏</button>
+                <button id="restart-btn" style="display:none;">重新开始</button>
+            </div>
+            <div class="ui-section">
+                <h2>操作说明</h2>
+                <div id="instructions">
+                    玩家1：<br>
+                    W/A/S/D - 移动<br>
+                    J - 射击<br>
+                    <br>
+                    玩家2（可选）：<br>
+                    ↑/↓/←/→ - 移动<br>
+                    Num 0 - 射击
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="tank_battle.js"></script>
+</body>
+</html>
