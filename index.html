@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>坦克大战</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            position: relative;
+            border: 3px solid #333;
+            background: #111;
+        }
+        
+        #gameCanvas {
+            display: block;
+            background: #000;
+        }
+        
+        .hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        .player-info {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+        }
+        
+        .health-bar {
+            width: 100px;
+            height: 10px;
+            background: #333;
+            border: 1px solid #666;
+            margin-top: 5px;
+        }
+        
+        .health-fill {
+            height: 100%;
+            background: #0f0;
+            transition: width 0.3s;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border: 3px solid #333;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 200;
+            display: none;
+        }
+        
+        .menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border: 3px solid #333;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 200;
+        }
+        
+        .menu h1 {
+            color: #ff0;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+        
+        .menu button {
+            background: #333;
+            color: #fff;
+            border: 2px solid #666;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 16px;
+        }
+        
+        .menu button:hover {
+            background: #555;
+            border-color: #888;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        .minimap {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 150px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #333;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div class="hud">
+            <div class="player-info">
+                <div>生命: <span id="playerHealth">100</span></div>
+                <div class="health-bar">
+                    <div class="health-fill" id="healthFill" style="width: 100%;"></div>
+                </div>
+                <div>得分: <span id="playerScore">0</span></div>
+                <div>关卡: <span id="currentLevel">1</span></div>
+            </div>
+            <div class="player-info">
+                <div>弹药: <span id="ammoCount">∞</span></div>
+                <div>敌人: <span id="enemyCount">0</span></div>
+                <div>时间: <span id="gameTime">00:00</span></div>
+            </div>
+        </div>
+        
+        <div class="minimap">
+            <canvas id="minimapCanvas" width="150" height="150"></canvas>
+        </div>
+        
+        <div class="controls">
+            <div>WASD - 移动</div>
+            <div>空格 - 射击</div>
+            <div>R - 重新开始</div>
+            <div>P - 暂停</div>
+        </div>
+        
+        <div class="menu" id="mainMenu">
+            <h1>坦克大战</h1>
+            <button onclick="startGame()">开始游戏</button>
+            <button onclick="showInstructions()">游戏说明</button>
+            <button onclick="showSettings()">设置</button>
+        </div>
+        
+        <div class="game-over" id="gameOverScreen">
+            <h2 id="gameOverTitle">游戏结束</h2>
+            <p id="gameOverMessage">你的得分: <span id="finalScore">0</span></p>
+            <button onclick="restartGame()">重新开始</button>
+            <button onclick="showMainMenu()">返回菜单</button>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
