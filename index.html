@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>植物大战僵尸 - 简易版</title>
+  <style>
+    :root {
+      --tile-w: 100px;
+      --tile-h: 90px;
+      --rows: 5;
+      --cols: 9;
+      --field-w: calc(var(--cols) * var(--tile-w));
+      --field-h: calc(var(--rows) * var(--tile-h));
+      --green-1: #8fd694;
+      --green-2: #6abf69;
+      --green-3: #4a9e4f;
+      --bar: #1e2a2f;
+      --text: #f4f7f8;
+      --accent: #f2c14e;
+      --pea: #6bd16b;
+      --zombie: #8a9a9a;
+      --grid-line: rgba(255,255,255,0.12);
+      --shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: linear-gradient(180deg, #0b1d24 0%, #0e232a 100%);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+    }
+
+    .app {
+      max-width: calc(var(--field-w) + 32px);
+      margin: 20px auto;
+      padding: 0 16px 24px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bar);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 10px 14px;
+      box-shadow: var(--shadow);
+      gap: 12px;
+    }
+
+    .left, .right { display: flex; align-items: center; gap: 12px; }
+
+    .sun-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(242, 193, 78, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(242, 193, 78, 0.35);
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .toolbar { display: flex; gap: 8px; }
+
+    .btn {
+      position: relative;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.06s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.1); }
+    .btn:active { transform: translateY(0); }
+    .btn.active { outline: 2px solid var(--accent); background: rgba(242, 193, 78, 0.13); }
+
+    .cost {
+      position: absolute; right: 6px; bottom: 4px; font-size: 11px; opacity: 0.8; color: var(--accent);
+    }
+
+    .field-wrap { position: relative; margin-top: 16px; }
+
+    .field {
+      position: relative;
+      width: var(--field-w);
+      height: var(--field-h);
+      margin: 0 auto;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background: linear-gradient(180deg, var(--green-1), var(--green-2));
+      border: 2px solid rgba(255,255,255,0.12);
+    }
+
+    /* Lawn stripes */
+    .row-stripe { position: absolute; left: 0; width: 100%; height: var(--tile-h); }
+    .row-stripe:nth-child(odd) { background: rgba(0,0,0,0.05); }
+
+    /* Grid overlay */
+    .grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+      background-size: var(--tile-w) var(--tile-h), var(--tile-w) var(--tile-h);
+    }
+
+    /* Clickable tiles for placement */
+    .tiles { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--cols), var(--tile-w)); grid-template-rows: repeat(var(--rows), var(--tile-h)); }
+    .tile { pointer-events: auto; }
+    .tile:hover { outline: 2px dashed rgba(255,255,255,0.25); outline-offset: -2px; }
+
+    /* Entities */
+    .entities { position: absolute; inset: 0; }
+
+    .plant, .zombie, .pea, .sun-token { position: absolute; will-change: transform; }
+
+    .plant {
+      width: calc(var(--tile-w) - 10px);
+      height: calc(var(--tile-h) - 10px);
+      transform: translate(5px, 5px);
+      border-radius: 12px;
+      display: grid; place-items: center;
+      font-size: 22px; font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+      border: 2px solid rgba(0,0,0,0.1);
+    }
+    .plant.peashooter { background: #5fc35f; }
+    .plant.sunflower { background: #f2c14e; color: #5a3d00; }
+    .plant.wallnut { background: #b08968; }
+
+    .zombie {
+      width: 62px; height: 80px;
+      background: var(--zombie);
+      border: 2px solid #6f7e7e;
+      border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 22px;
+      color: #202b2b; font-weight: 800;
+    }
+
+    .pea {
+      width: 14px; height: 14px; border-radius: 50%; background: var(--pea); border: 2px solid #2f993a;
+      box-shadow: 0 0 10px rgba(107, 209, 107, 0.7);
+    }
+
+    .sun-token {
+      width: 42px; height: 42px; border-radius: 50%; background: #ffd166; border: 2px solid #caa240;
+      display: grid; place-items: center; color: #6b4b00; font-weight: 800; font-size: 14px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      cursor: pointer;
+    }
+
+    .overlay {
+      position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none;
+    }
+    .overlay .panel {
+      pointer-events: auto;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 14px; padding: 18px 22px; text-align: center;
+      backdrop-filter: blur(4px);
+    }
+    .overlay h2 { margin: 0 0 10px; }
+
+    .small { font-size: 12px; opacity: 0.8; }
+    .muted { opacity: 0.75; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="left">
+        <div class="sun-box" id="sunBox">☀️ <span id="sunCount">150</span></div>
+        <div class="toolbar">
+          <div class="btn" data-plant="peashooter" title="豌豆射手 (100)">🌿 豌豆 <span class="cost">100</span></div>
+          <div class="btn" data-plant="sunflower" title="向日葵 (50)">🌻 向日葵 <span class="cost">50</span></div>
+          <div class="btn" data-plant="wallnut" title="坚果墙 (50)">🪵 坚果 <span class="cost">50</span></div>
+          <div class="btn" id="shovelBtn" title="铲子：移除植物">🧹 铲子</div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="btn" id="restartBtn">重新开始</div>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <div class="field" id="field">
+        <!-- background stripes -->
+        <div id="stripes"></div>
+        <div class="grid"></div>
+        <div class="tiles" id="tiles"></div>
+        <div class="entities" id="entities"></div>
+        <div class="overlay" id="overlay" hidden>
+          <div class="panel">
+            <h2 id="overlayTitle">游戏结束</h2>
+            <div class="muted" id="overlayDesc">僵尸冲破了你的防线…</div>
+            <div style="height: 12px"></div>
+            <div class="btn" id="overlayRestart">再来一局</div>
+          </div>
+        </div>
+      </div>
+      <div class="small muted" style="margin-top:8px">提示：选择植物后点击草地格子放置。点击阳光收集。铲子可以移除植物。</div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- 配置 ----------
+    const ROWS = 5;
+    const COLS = 9;
+    const TILE_W = 100;
+    const TILE_H = 90;
+
+    const PLANTS = {
+      peashooter: { key:'peashooter', cost:100, hp: 300, fireInterval: 1500, emoji:'🌿', className:'peashooter' },
+      sunflower: { key:'sunflower', cost:50, hp: 200, sunInterval: 8000, emoji:'🌻', className:'sunflower' },
+      wallnut: { key:'wallnut', cost:50, hp: 900, emoji:'🪵', className:'wallnut' },
+    };
+
+    const ZOMBIE = { hp: 400, speed: 22 /* px/s */, dps: 18, emoji:'🧟' };
+    const PEA = { speed: 200 /* px/s */, damage: 80 };
+
+    // ---------- 状态 ----------
+    let sun = 150;
+    let selectedTool = { type: 'plant', value: 'peashooter' }; // or { type:'shovel' }
+
+    const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+
+    /** Plants placed on grid */
+    const plants = new Set(); // each: {id,row,col,hp,type,nextFireAt?, nextSunAt?}
+    /** Zombies in field */
+    const zombies = new Set(); // each: {id,row,x,hp,attacking:false, targetPlant:null}
+    /** Peas projectiles */
+    const peas = new Set(); // each: {id,row,x}
+    /** Sun tokens */
+    const suns = new Set(); // each: {id,x,y,vy,fromPlant:boolean,expireAt:number}
+
+    let running = true;
+    let lastTs = performance.now();
+    let spawnHandle = null;
+    let skySunHandle = null;
+
+    // ---------- DOM ----------
+    const sunCountEl = document.getElementById('sunCount');
+    const tilesEl = document.getElementById('tiles');
+    const entitiesEl = document.getElementById('entities');
+    const stripesEl = document.getElementById('stripes');
+    const overlayEl = document.getElementById('overlay');
+    const overlayTitleEl = document.getElementById('overlayTitle');
+    const overlayDescEl = document.getElementById('overlayDesc');
+
+    function $(selector, root=document) { return root.querySelector(selector); }
+    function $all(selector, root=document) { return Array.from(root.querySelectorAll(selector)); }
+
+    function updateSunUI() { sunCountEl.textContent = sun; }
+
+    function addStripeRows() {
+      stripesEl.innerHTML = '';
+      for (let r=0; r<ROWS; r++) {
+        const d = document.createElement('div');
+        d.className = 'row-stripe';
+        d.style.top = `${r*TILE_H}px`;
+        d.style.height = `${TILE_H}px`;
+        stripesEl.appendChild(d);
+      }
+    }
+
+    function buildTiles() {
+      tilesEl.innerHTML = '';
+      for (let r=0; r<ROWS; r++) {
+        for (let c=0; c<COLS; c++) {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+          tile.dataset.row = r;
+          tile.dataset.col = c;
+          tile.addEventListener('click', onTileClick);
+          tilesEl.appendChild(tile);
+        }
+      }
+    }
+
+    // ---------- 工具栏 ----------
+    function setupToolbar() {
+      const buttons = $all('.toolbar .btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const plant = btn.dataset.plant;
+          if (plant) {
+            selectedTool = { type: 'plant', value: plant };
+            $('#shovelBtn').classList.remove('active');
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+          }
+        });
+      });
+      // default select
+      const defaultBtn = document.querySelector('.toolbar .btn[data-plant="peashooter"]');
+      if (defaultBtn) defaultBtn.classList.add('active');
+
+      const shovelBtn = document.getElementById('shovelBtn');
+      shovelBtn.addEventListener('click', () => {
+        selectedTool = selectedTool.type === 'shovel' ? { type:'plant', value:'peashooter' } : { type:'shovel' };
+        $all('.toolbar .btn').forEach(b => b.classList.remove('active'));
+        shovelBtn.classList.toggle('active');
+      });
+
+      document.getElementById('restartBtn').addEventListener('click', () => restart());
+      document.getElementById('overlayRestart').addEventListener('click', () => restart());
+    }
+
+    // ---------- 放置与移除 ----------
+    function canAfford(plantKey) { return sun >= PLANTS[plantKey].cost; }
+
+    function onTileClick(e) {
+      const row = Number(e.currentTarget.dataset.row);
+      const col = Number(e.currentTarget.dataset.col);
+      const existing = grid[row][col];
+
+      if (selectedTool.type === 'shovel') {
+        if (existing) removePlant(existing);
+        return;
+      }
+
+      const plantKey = selectedTool.value;
+      if (!canAfford(plantKey)) return;
+      if (existing) return;
+      placePlant(plantKey, row, col);
+    }
+
+    function placePlant(plantKey, row, col) {
+      const def = PLANTS[plantKey];
+      sun -= def.cost; updateSunUI();
+
+      const plant = {
+        id: `p_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+        type: plantKey,
+        row, col,
+        hp: def.hp,
+        nextFireAt: 0,
+        nextSunAt: 0,
+        el: null,
+      };
+      plants.add(plant);
+      grid[row][col] = plant;
+
+      const el = document.createElement('div');
+      el.className = `plant ${def.className}`;
+      el.style.left = `${col*TILE_W}px`;
+      el.style.top = `${row*TILE_H}px`;
+      el.textContent = def.emoji;
+      el.title = `${plantKey} HP:${plant.hp}`;
+      entitiesEl.appendChild(el);
+      plant.el = el;
+    }
+
+    function removePlant(plant) {
+      plants.delete(plant);
+      if (grid[plant.row][plant.col] === plant) grid[plant.row][plant.col] = null;
+      plant.el?.remove();
+    }
+
+    // ---------- 僵尸 ----------
+    function spawnZombie() {
+      const row = Math.floor(Math.random() * ROWS);
+      const z = {
+        id: `z_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+        row,
+        x: COLS * TILE_W + 10, // start just beyond right edge
+        hp: ZOMBIE.hp,
+        attacking: false,
+        targetPlant: null,
+        el: null,
+      };
+      zombies.add(z);
+      const el = document.createElement('div');
+      el.className = 'zombie';
+      el.style.top = `${row*TILE_H + 5}px`;
+      el.style.left = `${z.x}px`;
+      el.textContent = ZOMBIE.emoji;
+      entitiesEl.appendChild(el);
+      z.el = el;
+    }
+
+    // ---------- 子弹 ----------
+    function firePea(row, startX) {
+      const pea = { id: `pea_${Date.now()}_${Math.random().toString(36).slice(2,7)}`, row, x: startX, el: null };
+      peas.add(pea);
+      const el = document.createElement('div');
+      el.className = 'pea';
+      el.style.top = `${row*TILE_H + TILE_H/2 - 6}px`;
+      el.style.left = `${startX}px`;
+      entitiesEl.appendChild(el);
+      pea.el = el;
+    }
+
+    // ---------- 阳光 ----------
+    function spawnSunToken(x, y, fromPlant=false) {
+      const sunToken = {
+        id: `s_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,
+        x, y,
+        vy: fromPlant ? 0 : 40 + Math.random()*20,
+        fromPlant,
+        expireAt: performance.now() + (fromPlant ? 6000 : 9000),
+        el: null,
+      };
+      suns.add(sunToken);
+      const el = document.createElement('div');
+      el.className = 'sun-token';
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      el.textContent = '+25';
+      el.addEventListener('click', () => {
+        collectSun(sunToken);
+      });
+      entitiesEl.appendChild(el);
+      sunToken.el = el;
+    }
+
+    function collectSun(token) {
+      if (!suns.has(token)) return;
+      suns.delete(token);
+      token.el?.remove();
+      sun += 25; updateSunUI();
+    }
+
+    function spawnSkySun() {
+      const x = Math.random() * (COLS*TILE_W - 44);
+      spawnSunToken(x, -10, false);
+    }
+
+    // ---------- 主循环 ----------
+    function anyZombieAhead(row, col) {
+      const xRight = (col+1) * TILE_W;
+      for (const z of zombies) {
+        if (z.row === row && z.x >= xRight - 10) return true;
+      }
+      return false;
+    }
+
+    function update(dt) {
+      // Plants actions
+      const now = performance.now();
+      for (const p of plants) {
+        if (p.type === 'peashooter') {
+          if (anyZombieAhead(p.row, p.col)) {
+            if (now >= p.nextFireAt) {
+              p.nextFireAt = now + PLANTS.peashooter.fireInterval;
+              const startX = p.col*TILE_W + (TILE_W - 14);
+              firePea(p.row, startX);
+            }
+          }
+        } else if (p.type === 'sunflower') {
+          if (now >= p.nextSunAt) {
+            p.nextSunAt = now + PLANTS.sunflower.sunInterval;
+            const x = p.col*TILE_W + (TILE_W/2 - 20);
+            const y = p.row*TILE_H + (TILE_H/2 - 20);
+            spawnSunToken(x, y, true);
+          }
+        }
+      }
+
+      // Peas move & collide
+      for (const pea of Array.from(peas)) {
+        pea.x += PEA.speed * dt;
+        if (pea.x > COLS*TILE_W + 30) {
+          peas.delete(pea); pea.el?.remove(); continue;
+        }
+        pea.el.style.left = `${pea.x}px`;
+        // collision with zombies
+        for (const z of Array.from(zombies)) {
+          if (z.row !== pea.row) continue;
+          if (Math.abs(pea.x - (z.x + 30)) < 22) {
+            // hit
+            z.hp -= PEA.damage;
+            peas.delete(pea); pea.el?.remove();
+            if (z.hp <= 0) { zombies.delete(z); z.el?.remove(); }
+            break;
+          }
+        }
+      }
+
+      // Zombies move & attack
+      for (const z of Array.from(zombies)) {
+        if (!z.attacking) {
+          z.x -= ZOMBIE.speed * dt;
+          z.el.style.left = `${z.x}px`;
+          // find plant in current cell to attack
+          const col = Math.max(0, Math.floor(z.x / TILE_W));
+          if (col >= 0 && col < COLS) {
+            const plant = grid[z.row][col];
+            if (plant) {
+              z.attacking = true;
+              z.targetPlant = plant;
+            }
+          }
+        } else {
+          const target = z.targetPlant;
+          if (!target || !plants.has(target)) { z.attacking = false; z.targetPlant = null; continue; }
+          target.hp -= ZOMBIE.dps * dt;
+          target.el.title = `${target.type} HP:${Math.max(0, target.hp|0)}`;
+          if (target.hp <= 0) {
+            removePlant(target);
+            z.attacking = false; z.targetPlant = null;
+          }
+        }
+
+        if (z.x <= -20) {
+          // game over
+          endGame(false);
+          return;
+        }
+      }
+
+      // Suns falling / lifetime
+      for (const s of Array.from(suns)) {
+        if (!s.fromPlant) {
+          s.y += s.vy * dt;
+          const maxY = ROWS*TILE_H - 52;
+          if (s.y > maxY) s.y = maxY;
+          s.el.style.top = `${s.y}px`;
+        }
+        if (performance.now() >= s.expireAt) {
+          s.el?.remove();
+          suns.delete(s);
+        }
+      }
+    }
+
+    function loop(ts) {
+      if (!running) return;
+      const dt = Math.min(0.05, (ts - lastTs) / 1000);
+      lastTs = ts;
+      update(dt);
+      requestAnimationFrame(loop);
+    }
+
+    // ---------- 胜负与重启 ----------
+    function endGame(win) {
+      running = false;
+      clearInterval(spawnHandle); spawnHandle = null;
+      clearInterval(skySunHandle); skySunHandle = null;
+      overlayTitleEl.textContent = win ? '你赢了！' : '游戏结束';
+      overlayDescEl.textContent = win ? '成功守住了草坪！' : '僵尸冲破了你的防线…';
+      overlayEl.hidden = false;
+    }
+
+    function restart() {
+      // clear entities
+      for (const p of Array.from(plants)) removePlant(p);
+      for (const z of Array.from(zombies)) { zombies.delete(z); z.el?.remove(); }
+      for (const pea of Array.from(peas)) { peas.delete(pea); pea.el?.remove(); }
+      for (const s of Array.from(suns)) { suns.delete(s); s.el?.remove(); }
+      for (let r=0; r<ROWS; r++) for (let c=0; c<COLS; c++) grid[r][c]=null;
+
+      sun = 150; updateSunUI();
+      running = true; overlayEl.hidden = true;
+      lastTs = performance.now();
+
+      // spawn timers
+      if (spawnHandle) clearInterval(spawnHandle);
+      if (skySunHandle) clearInterval(skySunHandle);
+      spawnHandle = setInterval(() => {
+        // spawn faster over time
+        spawnZombie();
+      }, 2800);
+      skySunHandle = setInterval(spawnSkySun, 5000);
+
+      requestAnimationFrame(loop);
+    }
+
+    // ---------- 初始化 ----------
+    function init() {
+      addStripeRows();
+      buildTiles();
+      setupToolbar();
+      updateSunUI();
+
+      // 初始引导：掉一个天上阳光
+      spawnSkySun();
+
+      restart();
+    }
+
+    // 启动
+    init();
+  </script>
+</body>
+</html>
