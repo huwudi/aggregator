@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>植物大战僵尸</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 50%, #228B22 100%);
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #gameCanvas {
+            border: 3px solid #8B4513;
+            background: #90EE90;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            z-index: 10;
+        }
+        
+        #plantCards {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .plant-card {
+            width: 60px;
+            height: 80px;
+            background: #8B4513;
+            border: 2px solid #654321;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        
+        .plant-card:hover {
+            transform: scale(1.1);
+        }
+        
+        .plant-card.selected {
+            border-color: #FFD700;
+            box-shadow: 0 0 10px #FFD700;
+        }
+        
+        .plant-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .plant-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .plant-cost {
+            font-size: 10px;
+            color: #FFD700;
+        }
+        
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .game-over-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .restart-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .restart-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1000" height="600"></canvas>
+        
+        <div id="ui">
+            <div>阳光: <span id="sunCount">50</span></div>
+            <div>波次: <span id="waveCount">1</span></div>
+            <div>生命: <span id="lives">3</span></div>
+        </div>
+        
+        <div id="plantCards">
+            <div class="plant-card" data-plant="sunflower">
+                <div class="plant-icon">🌻</div>
+                <div>向日葵</div>
+                <div class="plant-cost">50</div>
+            </div>
+            <div class="plant-card" data-plant="peashooter">
+                <div class="plant-icon">🌱</div>
+                <div>豌豆射手</div>
+                <div class="plant-cost">100</div>
+            </div>
+            <div class="plant-card" data-plant="wallnut">
+                <div class="plant-icon">🥜</div>
+                <div>坚果墙</div>
+                <div class="plant-cost">50</div>
+            </div>
+            <div class="plant-card" data-plant="repeater">
+                <div class="plant-icon">🌿</div>
+                <div>双发射手</div>
+                <div class="plant-cost">200</div>
+            </div>
+            <div class="plant-card" data-plant="snowpea">
+                <div class="plant-icon">❄️</div>
+                <div>寒冰射手</div>
+                <div class="plant-cost">175</div>
+            </div>
+            <div class="plant-card" data-plant="cherrybomb">
+                <div class="plant-icon">🍒</div>
+                <div>樱桃炸弹</div>
+                <div class="plant-cost">150</div>
+            </div>
+            <div class="plant-card" data-plant="potatomine">
+                <div class="plant-icon">🥔</div>
+                <div>土豆雷</div>
+                <div class="plant-cost">25</div>
+            </div>
+            <div class="plant-card" data-plant="threepeater">
+                <div class="plant-icon">🌾</div>
+                <div>三线射手</div>
+                <div class="plant-cost">325</div>
+            </div>
+            <div class="plant-card" data-plant="tallnut">
+                <div class="plant-icon">🌰</div>
+                <div>高坚果</div>
+                <div class="plant-cost">125</div>
+            </div>
+            <div class="plant-card" data-plant="pumpkin">
+                <div class="plant-icon">🎃</div>
+                <div>南瓜头</div>
+                <div class="plant-cost">100</div>
+            </div>
+        </div>
+        
+        <div id="gameOverScreen">
+            <div class="game-over-content">
+                <h2 id="gameOverTitle">游戏结束</h2>
+                <p id="gameOverMessage">僵尸吃掉了你的大脑！</p>
+                <button class="restart-btn" onclick="restartGame()">重新开始</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
